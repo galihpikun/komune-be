@@ -27,22 +27,38 @@ export const getForumBySlug = async (req, res) => {
 
     const [forums] = await connection.query(
       `
-            SELECT
-                forums.*,
+      SELECT
+          forums.*,
 
-                users.id AS creator_id,
-                users.username AS creator_username,
-                users.avatar AS creator_avatar,
-                COUNT(DISTINCT forum_members.id) AS total_members,
-COUNT(DISTINCT posts.id) AS total_posts
+          users.id AS creator_id,
+          users.username AS creator_username,
+          users.avatar AS creator_avatar,
 
-            FROM forums
+          COUNT(DISTINCT forum_members.id)
+          AS total_members,
 
-            JOIN users
-            ON users.id = forums.created_by
+          COUNT(DISTINCT posts.id)
+          AS total_posts,
 
-            WHERE forums.slug = ?
-            `,
+          COUNT(DISTINCT comments.id) AS total_comments
+
+      FROM forums
+
+      JOIN users
+      ON users.id = forums.created_by
+
+      LEFT JOIN forum_members
+      ON forum_members.forum_id = forums.id
+      AND forum_members.status = 'approved'
+
+      LEFT JOIN posts
+      ON posts.forum_id = forums.id
+      AND posts.status = 'approved'
+
+      WHERE forums.slug = ?
+
+      GROUP BY forums.id
+      `,
       [slug],
     );
 
@@ -57,6 +73,7 @@ COUNT(DISTINCT posts.id) AS total_posts
       success: true,
       data: forums[0],
     });
+
   } catch (error) {
     return res.status(500).json({
       success: false,

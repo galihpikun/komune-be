@@ -1,4 +1,6 @@
 import connection from "../lib/db.js";
+import { createNotification } from "../service/notificationService.js";
+
 
 export const getCommentsByPost = async (req, res) => {
     try {
@@ -67,8 +69,11 @@ export const getCommentsByPost = async (req, res) => {
 
 export const createComment = async (req, res) => {
     try {
-        const { post_id, content, parent_comment_id } =
-            req.body;
+        const {
+            post_id,
+            content,
+            parent_comment_id
+        } = req.body;
 
         const userId = req.user.id;
 
@@ -91,9 +96,12 @@ export const createComment = async (req, res) => {
         if (post.is_locked) {
             return res.status(403).json({
                 success: false,
-                message: "Komentar pada post ini dikunci"
+                message:
+                    "Komentar pada post ini dikunci"
             });
         }
+
+        let parentComment = null;
 
         // cek parent comment kalau reply
         if (parent_comment_id) {
@@ -113,6 +121,8 @@ export const createComment = async (req, res) => {
                         "Parent comment tidak ditemukan"
                 });
             }
+
+            parentComment = parentComments[0];
         }
 
         const [result] = await connection.query(
@@ -133,6 +143,35 @@ export const createComment = async (req, res) => {
                 content
             ]
         );
+
+        // =========================
+        // NOTIFICATIONS
+        // =========================
+
+        // reply notification
+        if (
+            parentComment &&
+            parentComment.user_id !== userId
+        ) {
+            await createNotification({
+                user_id: parentComment.user_id,
+                sender_id: userId,
+                type: "reply",
+                reference_id: result.insertId
+            });
+        }
+
+        // comment notification
+        else if (
+            post.user_id !== userId
+        ) {
+            await createNotification({
+                user_id: post.user_id,
+                sender_id: userId,
+                type: "comment",
+                reference_id: result.insertId
+            });
+        }
 
         return res.status(201).json({
             success: true,

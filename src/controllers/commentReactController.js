@@ -1,4 +1,5 @@
 import connection from "../lib/db.js";
+import { createNotification } from "../service/notificationService.js";
 
 export const reactComment = async (req, res) => {
     try {
@@ -8,7 +9,6 @@ export const reactComment = async (req, res) => {
 
         const userId = req.user.id;
 
-        // validasi type
         if (
             type !== "like" &&
             type !== "dislike"
@@ -38,6 +38,12 @@ export const reactComment = async (req, res) => {
             });
         }
 
+        const comment = comments[0];
+
+        // jangan notif diri sendiri
+        const isSelfReaction =
+            comment.user_id === userId;
+
         // cek existing reaction
         const [reactions] =
             await connection.query(
@@ -64,6 +70,19 @@ export const reactComment = async (req, res) => {
                 [commentId, userId, type]
             );
 
+            // notification
+            if (
+                type === "like" &&
+                !isSelfReaction
+            ) {
+                await createNotification({
+                    user_id: comment.user_id,
+                    sender_id: userId,
+                    type: "like_comment",
+                    reference_id: comment.id
+                });
+            }
+
             return res.status(201).json({
                 success: true,
                 message:
@@ -73,7 +92,7 @@ export const reactComment = async (req, res) => {
 
         const reaction = reactions[0];
 
-        // toggle off kalau reaction sama
+        // toggle off
         if (reaction.type === type) {
             await connection.query(
                 `

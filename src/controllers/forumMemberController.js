@@ -1,4 +1,5 @@
 import connection from "../lib/db.js";
+import { createNotification } from "../service/notificationService.js";
 
 export const joinForum = async (req, res) => {
     try {
@@ -190,6 +191,7 @@ export const approveMember = async (req, res) => {
             SELECT
                 forum_members.*,
                 forums.created_by
+
             FROM forum_members
 
             JOIN forums
@@ -203,7 +205,8 @@ export const approveMember = async (req, res) => {
         if (members.length === 0) {
             return res.status(404).json({
                 success: false,
-                message: "Member request tidak ditemukan"
+                message:
+                    "Member request tidak ditemukan"
             });
         }
 
@@ -220,7 +223,17 @@ export const approveMember = async (req, res) => {
         if (!isOwner && !isAdmin) {
             return res.status(403).json({
                 success: false,
-                message: "Tidak memiliki akses"
+                message:
+                    "Tidak memiliki akses"
+            });
+        }
+
+        // sudah approved
+        if (member.status === "approved") {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Member sudah disetujui"
             });
         }
 
@@ -233,9 +246,18 @@ export const approveMember = async (req, res) => {
             [memberId]
         );
 
+        // notification
+        await createNotification({
+            user_id: member.user_id,
+            sender_id: user.id,
+            type: "join_approved",
+            reference_id: member.forum_id
+        });
+
         return res.status(200).json({
             success: true,
-            message: "Member berhasil disetujui"
+            message:
+                "Member berhasil disetujui"
         });
 
     } catch (error) {

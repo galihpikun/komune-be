@@ -1,4 +1,5 @@
 import connection from "../lib/db.js";
+import { createNotification } from "../service/notificationService.js";
 
 export const reactPost = async (req, res) => {
     try {
@@ -36,6 +37,12 @@ export const reactPost = async (req, res) => {
             });
         }
 
+        const post = posts[0];
+
+        // jangan notif diri sendiri
+        const isSelfReaction =
+            post.user_id === userId;
+
         // cek existing reaction
         const [reactions] =
             await connection.query(
@@ -61,6 +68,19 @@ export const reactPost = async (req, res) => {
                 `,
                 [postId, userId, type]
             );
+
+            // notification
+            if (
+                type === "like" &&
+                !isSelfReaction
+            ) {
+                await createNotification({
+                    user_id: post.user_id,
+                    sender_id: userId,
+                    type: "like_post",
+                    reference_id: post.id
+                });
+            }
 
             return res.status(201).json({
                 success: true,
