@@ -14,6 +14,7 @@ export const getUsers = async (req, res) => {
     });
 
   } catch (error) {
+    console.error(error);
     return res.status(500).json({
       code: 500,
       message: error.message,
@@ -46,6 +47,7 @@ export const getUserById = async (req, res) => {
     });
 
   } catch (error) {
+    console.error(error);
     return res.status(500).json({
       code: 500,
       message: error.message,
