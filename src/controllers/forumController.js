@@ -1,5 +1,6 @@
 import connection from "../lib/db.js";
 import slugify from "slugify";
+import fs from "fs";
 
 export const getForums = async (req, res) => {
   try {
