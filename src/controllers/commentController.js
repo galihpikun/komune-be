@@ -240,7 +240,11 @@ export const updateComment = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "Komentar berhasil diupdate"
+            message: "Komentar berhasil diupdate",
+            data:{
+                id: comment.id,
+                content: content
+            }
         });
 
     } catch (error) {

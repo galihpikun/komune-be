@@ -1,4 +1,7 @@
 import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 export function jwtMiddleware (req, res, next) {
   console.log("masuk middleware...");

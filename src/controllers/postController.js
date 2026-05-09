@@ -207,7 +207,12 @@ export const createPost = async (req, res) => {
             success: true,
             message: "Post berhasil dibuat",
             data: {
-                id: postId
+                id: postId,
+                forum_id: forum_id,
+                user_id: userId,
+                title: title,
+                content: content,
+                status: "pending"
             }
         });
 

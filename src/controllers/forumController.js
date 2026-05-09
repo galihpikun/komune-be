@@ -101,29 +101,59 @@ export const createForum = async (req, res) => {
       ? req.files["banner_image"][0].filename
       : null;
 
+    // create forum
     const [result] = await connection.query(
       `
-            INSERT INTO forums
-            (
-                name,
-                slug,
-                description,
-                icon_image,
-                banner_image,
-                created_by
-            )
-            VALUES (?, ?, ?, ?, ?, ?)
-            `,
-      [name, slug, description, iconImage, bannerImage, userId],
+      INSERT INTO forums
+      (
+          name,
+          slug,
+          description,
+          icon_image,
+          banner_image,
+          created_by
+      )
+      VALUES (?, ?, ?, ?, ?, ?)
+      `,
+      [
+        name,
+        slug,
+        description,
+        iconImage,
+        bannerImage,
+        userId
+      ]
+    );
+
+    const forumId = result.insertId;
+
+    // auto join owner
+    await connection.query(
+      `
+      INSERT INTO forum_members
+      (
+          forum_id,
+          user_id,
+          status
+      )
+      VALUES (?, ?, ?)
+      `,
+      [forumId, userId, "approved"]
     );
 
     return res.status(201).json({
       success: true,
       message: "Forum berhasil dibuat",
       data: {
-        id: result.insertId,
+        id: forumId,
+        name,
+        slug,
+        description,
+        icon_image: iconImage,
+        banner_image: bannerImage,
       },
     });
+
   } catch (error) {
     return res.status(500).json({
       success: false,
@@ -216,6 +246,14 @@ export const updateForum = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Forum berhasil diupdate",
+      data:{
+        id: forum.id,
+        name: name || forum.name,
+        slug: slug,
+        description: description || forum.description,
+        icon_image: iconImage,
+        banner_image: bannerImage,
+      }
     });
   } catch (error) {
     return res.status(500).json({
