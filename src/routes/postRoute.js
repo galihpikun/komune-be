@@ -10,8 +10,7 @@ import {
     rejectPost
 } from "../controllers/postController.js";
 import { jwtMiddleware } from "../middlewares/jwtMiddleware.js";
-
-import { uploadPost } from "../middlewares/uploadMiddleware.js";
+import { uploadPost } from "../middlewares/uploadPostMiddleware.js";
 
 const routerPost = express.Router();
 

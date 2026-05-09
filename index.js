@@ -5,6 +5,7 @@ import routeUser from "./src/routes/userRoute.js"
 import routerForum from "./src/routes/forumRoute.js"
 import routerForumMember from "./src/routes/forumMemberRoute.js"
 import routerPost from "./src/routes/postRoute.js"
+import routerComment from "./src/routes/commentRoute.js"
 
 const app = express()
 const port = 3000
@@ -15,6 +16,7 @@ app.use(cors());
 // Route uploaded images
 app.use("/uploads", express.static("uploads"));
 
+app.use("/api/comments", routerComment);
 app.use("/api/posts", routerPost);
 app.use("/api/forum-members", routerForumMember);
 app.use("/api/auth", routeAuth);
