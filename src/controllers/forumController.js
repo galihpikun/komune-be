@@ -73,7 +73,6 @@ export const getForumBySlug = async (req, res) => {
       success: true,
       data: forums[0],
     });
-
   } catch (error) {
     return res.status(500).json({
       success: false,
@@ -115,14 +114,7 @@ export const createForum = async (req, res) => {
       )
       VALUES (?, ?, ?, ?, ?, ?)
       `,
-      [
-        name,
-        slug,
-        description,
-        iconImage,
-        bannerImage,
-        userId
-      ]
+      [name, slug, description, iconImage, bannerImage, userId],
     );
 
     const forumId = result.insertId;
@@ -138,7 +130,7 @@ export const createForum = async (req, res) => {
       )
       VALUES (?, ?, ?)
       `,
-      [forumId, userId, "approved"]
+      [forumId, userId, "approved"],
     );
 
     return res.status(201).json({
@@ -153,7 +145,6 @@ export const createForum = async (req, res) => {
         banner_image: bannerImage,
       },
     });
-
   } catch (error) {
     return res.status(500).json({
       success: false,
@@ -246,14 +237,14 @@ export const updateForum = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Forum berhasil diupdate",
-      data:{
+      data: {
         id: forum.id,
         name: name || forum.name,
         slug: slug,
         description: description || forum.description,
         icon_image: iconImage,
         banner_image: bannerImage,
-      }
+      },
     });
   } catch (error) {
     return res.status(500).json({
@@ -311,6 +302,202 @@ export const deleteForum = async (req, res) => {
       message: "Forum berhasil dihapus",
     });
   } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const getMostTrendingForums = async (req, res) => {
+  try {
+    const [forums] = await connection.query(
+      `
+            SELECT
+                forums.*,
+
+                COUNT(forum_members.id)
+                AS total_members
+
+            FROM forums
+
+            LEFT JOIN forum_members
+            ON forum_members.forum_id = forums.id
+            AND forum_members.status = 'approved'
+
+            GROUP BY forums.id
+
+            ORDER BY total_members DESC
+
+            LIMIT 3
+            `,
+    );
+
+    return res.status(200).json({
+      success: true,
+      data: forums,
+    });
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const joinForum = async (req, res) => {
+  try {
+    const { forumId } = req.params;
+
+    const userId = req.user.id;
+
+    // cek forum
+    const [forums] = await connection.query(
+      `
+            SELECT * FROM forums
+            WHERE id = ?
+            `,
+      [forumId],
+    );
+
+    if (forums.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Forum tidak ditemukan",
+      });
+    }
+
+    // cek membership
+    const [members] = await connection.query(
+      `
+                SELECT * FROM forum_members
+                WHERE forum_id = ?
+                AND user_id = ?
+                `,
+      [forumId, userId],
+    );
+
+    if (members.length > 0) {
+      const member = members[0];
+
+      // sudah approved
+      if (member.status === "approved") {
+        return res.status(400).json({
+          success: false,
+          message: "Kamu sudah join forum ini",
+        });
+      }
+
+      // masih pending
+      if (member.status === "pending") {
+        return res.status(400).json({
+          success: false,
+          message: "Permintaan join masih menunggu persetujuan",
+        });
+      }
+
+      // rejected -> ubah jadi pending lagi
+      await connection.query(
+        `
+                UPDATE forum_members
+                SET status = 'pending'
+                WHERE id = ?
+                `,
+        [member.id],
+      );
+
+      return res.status(200).json({
+        success: true,
+        message: "Permintaan join berhasil dikirim ulang",
+      });
+    }
+
+    // insert join request
+    await connection.query(
+      `
+            INSERT INTO forum_members
+            (
+                forum_id,
+                user_id,
+                status
+            )
+            VALUES (?, ?, ?)
+            `,
+      [forumId, userId, "pending"],
+    );
+
+    return res.status(201).json({
+      success: true,
+      message: "Berhasil request join forum",
+    });
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const leaveForum = async (req, res) => {
+  try {
+    const { forumId } = req.params;
+
+    const userId = req.user.id;
+
+    // cek membership
+    const [members] = await connection.query(
+      `
+                SELECT * FROM forum_members
+                WHERE forum_id = ?
+                AND user_id = ?
+                `,
+      [forumId, userId],
+    );
+
+    if (members.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Kamu bukan member forum ini",
+      });
+    }
+
+    const member = members[0];
+
+    // owner forum gaboleh leave
+    const [forums] = await connection.query(
+      `
+            SELECT * FROM forums
+            WHERE id = ?
+            `,
+      [forumId],
+    );
+
+    if (forums[0].created_by === userId) {
+      return res.status(400).json({
+        success: false,
+        message: "Owner forum tidak dapat keluar dari forum",
+      });
+    }
+
+    await connection.query(
+      `
+            DELETE FROM forum_members
+            WHERE id = ?
+            `,
+      [member.id],
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Berhasil keluar dari forum",
+    });
+  } catch (error) {
+    console.error(error);
+
     return res.status(500).json({
       success: false,
       message: error.message,
