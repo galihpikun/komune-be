@@ -9,11 +9,11 @@ export const generateToken = (params, res) => {
         expiresIn: process.env.JWT_EXPIRES_IN || "7d"
     })
 
-    // res.cookie("jwt", token, {
-    //     httpOnly:true,
-    //     sameSite: "strict",
-    //     maxAge : (1000 * 60 * 60 * 24) * 7,
-    // });
+    res.cookie("jwt", token, {
+        httpOnly:true,
+        sameSite: "strict",
+        maxAge : (1000 * 60 * 60 * 24) * 7,
+    });
 
     return token;
 }

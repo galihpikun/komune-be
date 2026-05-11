@@ -32,7 +32,13 @@ export const getPosts = async (req, res) => {
                     FROM post_reactions
                     WHERE post_reactions.post_id = posts.id
                     AND type = 'dislike'
-                ) AS total_dislikes
+                ) AS total_dislikes,
+
+                (
+                    SELECT JSON_ARRAYAGG(image_url)
+                    FROM post_images
+                    WHERE post_images.post_id = posts.id
+                ) AS images
 
             FROM posts
 

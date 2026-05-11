@@ -17,7 +17,7 @@ import { jwtMiddleware } from "./src/middlewares/jwtMiddleware.js"
 const app = express()
 const port = 3000
 
-// app.use(cookieParser());
+app.use(cookieParser());
 app.use(express.json());
 app.use(cors());
 
