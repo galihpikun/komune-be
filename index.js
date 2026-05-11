@@ -9,10 +9,15 @@ import routerComment from "./src/routes/commentRoute.js"
 import routerCommentReaction from "./src/routes/commentReactRoute.js"
 import routerPostReaction from "./src/routes/postReactRoute.js"
 import routerReport from "./src/routes/reportRoute.js"
+import cookieParser from "cookie-parser"
+
+// delete!
+import { jwtMiddleware } from "./src/middlewares/jwtMiddleware.js"
 
 const app = express()
 const port = 3000
 
+// app.use(cookieParser());
 app.use(express.json());
 app.use(cors());
 
