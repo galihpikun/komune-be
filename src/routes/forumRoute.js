@@ -1,6 +1,6 @@
 
 import express from "express";
-import { getForums,getForumBySlug,createForum,deleteForum,updateForum } from "../controllers/forumController.js";
+import { getForums,getForumBySlug,createForum,deleteForum,updateForum, getMostTrendingForums } from "../controllers/forumController.js";
 import { uploadForum } from "../middlewares/uploadMiddleware.js";
 import { jwtMiddleware } from "../middlewares/jwtMiddleware.js";
 
@@ -9,6 +9,7 @@ const routerForum = express.Router();
 routerForum.use(jwtMiddleware);
 
 routerForum.get("/", getForums);
+routerForum.get('/trending', getMostTrendingForums);
 routerForum.get("/:slug", getForumBySlug);
 routerForum.post(
     "/",
@@ -27,6 +28,7 @@ routerForum.put(
     updateForum
 );
 routerForum.delete("/:id", deleteForum);
+
 
 
 export default routerForum;

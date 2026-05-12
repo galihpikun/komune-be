@@ -12,11 +12,10 @@ export function jwtMiddleware (req, res, next) {
       message: "Token tidak ditemukan, akses ditolak",
     });
   }
-  const token = req.cookies.jwt;
-
+  
   // console.log("token dari cookie: ", token);
 
-  // // const token = headerToken.split(" ")[1];
+  const token = headerToken.split(" ")[1];
   
   // ngecek toketnya bener kaga
   jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {

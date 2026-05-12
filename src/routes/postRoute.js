@@ -14,6 +14,8 @@ import { uploadPost } from "../middlewares/uploadPostMiddleware.js";
 
 const routerPost = express.Router();
 
+routerPost.use(jwtMiddleware);
+
 routerPost.get("/", getPosts);
 routerPost.get("/:id", getPostById);
 routerPost.post(
