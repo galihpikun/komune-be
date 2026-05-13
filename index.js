@@ -2,8 +2,6 @@ import express from "express"
 import cors from "cors"
 import routeAuth from "./src/routes/authRoute.js"
 import routeUser from "./src/routes/userRoute.js"
-import routerForum from "./src/routes/forumRoute.js"
-import routerForumMember from "./src/routes/forumMemberRoute.js"
 import routerPost from "./src/routes/postRoute.js"
 import routerComment from "./src/routes/commentRoute.js"
 import routerCommentReaction from "./src/routes/commentReactRoute.js"
@@ -28,10 +26,8 @@ app.use("/api/comment-reactions", routerCommentReaction);
 app.use("/api/post-reactions", routerPostReaction);
 app.use("/api/comments", routerComment);
 app.use("/api/posts", routerPost);
-app.use("/api/forum-members", routerForumMember);
 app.use("/api/auth", routeAuth);
 app.use("/api/users", routeUser);
-app.use("/api/forums", routerForum);
 
 app.get('/', (req, res) => {
   res.send('Welcome to Komune API!')
