@@ -13,17 +13,14 @@ const routerComment = express.Router();
 routerComment.use(jwtMiddleware);
 
 routerComment.get("/post/:postId", getCommentsByPost);
-
 routerComment.post(
   "/",
   createComment,
 );
-
 routerComment.patch(
   "/:id",
   updateComment,
 );
-
 routerComment.delete(
   "/:id",
   deleteComment,
