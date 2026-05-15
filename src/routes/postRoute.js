@@ -8,7 +8,8 @@ import {
     deletePost,
     approvePost,
     rejectPost,
-    getTrendingPosts
+    getTrendingPosts,
+    getUserPosts
 } from "../controllers/postController.js";
 import { jwtMiddleware } from "../middlewares/jwtMiddleware.js";
 import { uploadPost } from "../middlewares/uploadPostMiddleware.js";
@@ -19,6 +20,7 @@ routerPost.use(jwtMiddleware);
 
 routerPost.get("/", getPosts);
 routerPost.get("/trending", getTrendingPosts);
+routerPost.get("/user-posts", getUserPosts);
 routerPost.get("/:id", getPostById);
 routerPost.post(
     "/",

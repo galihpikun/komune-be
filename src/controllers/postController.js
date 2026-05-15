@@ -6,6 +6,7 @@ export const getPosts = async (req, res) => {
     const [posts] = await connection.query(`
   SELECT
     posts.*,
+    posts.user_id as post_owner_id,
 
     users.username,
     users.avatar,
@@ -69,6 +70,7 @@ export const getPostById = async (req, res) => {
         posts.*, 
         users.username, 
         users.avatar,
+            posts.user_id as post_owner_id,
         (
           SELECT COUNT(*) 
           FROM comments 
@@ -119,6 +121,60 @@ export const getPostById = async (req, res) => {
   }
 };
 
+export const getUserPosts = async (req, res) => {
+  try {
+    const userId = req.user.id; 
+
+    const [posts] = await connection.query(
+      `
+      SELECT
+        posts.*,
+        posts.user_id as post_owner_id,
+        users.username,
+        users.avatar,
+        (
+          SELECT COUNT(*)
+          FROM comments
+          WHERE comments.post_id = posts.id
+        ) AS total_comments,
+        (
+          SELECT COUNT(*)
+          FROM post_reactions
+          WHERE post_reactions.post_id = posts.id
+          AND type = 'like'
+        ) AS total_likes,
+        (
+          SELECT COUNT(*)
+          FROM post_reactions
+          WHERE post_reactions.post_id = posts.id
+          AND type = 'dislike'
+        ) AS total_dislikes,
+        (
+          SELECT JSON_ARRAYAGG(image_url)
+          FROM post_images
+          WHERE post_images.post_id = posts.id
+        ) AS images
+      FROM posts
+      JOIN users ON users.id = posts.user_id
+      WHERE posts.user_id = ? 
+      AND posts.is_deleted = FALSE
+      ORDER BY posts.created_at DESC
+      `,
+      [userId]
+    );
+
+    return res.status(200).json({
+      success: true,
+      count: posts.length,
+      data: posts,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
 export const createPost = async (req, res) => {
   try {
     const { title, content, category, location } = req.body;

@@ -6,7 +6,6 @@ export const getCommentsByPost = async (req, res) => {
     try {
         const { postId } = req.params;
 
-        // cek post
         const [posts] = await connection.query(
             "SELECT * FROM posts WHERE id = ?",
             [postId]
@@ -19,44 +18,31 @@ export const getCommentsByPost = async (req, res) => {
             });
         }
 
+
         const [comments] = await connection.query(
             `
-            SELECT
-                comments.*,
-
-                users.username,
-                users.avatar,
-
-                (
-                    SELECT COUNT(*)
-                    FROM comment_reactions
-                    WHERE comment_reactions.comment_id = comments.id
-                    AND type = 'like'
-                ) AS total_likes,
-
-                (
-                    SELECT COUNT(*)
-                    FROM comment_reactions
-                    WHERE comment_reactions.comment_id = comments.id
-                    AND type = 'dislike'
-                ) AS total_dislikes
-
+            SELECT 
+                comments.*, 
+                users.username, 
+                users.avatar
             FROM comments
-
-            JOIN users
-            ON users.id = comments.user_id
-
-            WHERE comments.post_id = ?
+            JOIN users ON users.id = comments.user_id
+            WHERE comments.post_id = ? 
             AND comments.is_deleted = FALSE
-
             ORDER BY comments.created_at ASC
             `,
             [postId]
         );
 
+        const sanitizedComments = comments.map(comment => ({
+            ...comment,
+            total_likes: 0,
+            total_dislikes: 0
+        }));
+
         return res.status(200).json({
             success: true,
-            data: comments
+            data: sanitizedComments
         });
 
     } catch (error) {
