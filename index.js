@@ -4,7 +4,7 @@ import routeAuth from "./src/routes/authRoute.js"
 import routeUser from "./src/routes/userRoute.js"
 import routerPost from "./src/routes/postRoute.js"
 import routerComment from "./src/routes/commentRoute.js"
-
+import routerNotification from "./src/routes/notificationRoute.js"
 import routerPostReaction from "./src/routes/postReactRoute.js"
 import routerReport from "./src/routes/reportRoute.js"
 
@@ -22,7 +22,7 @@ app.use(cors());
 app.use("/uploads", express.static("uploads"));
 
 app.use("/api/reports", routerReport);
-
+app.use("/api/notifications", routerNotification);
 app.use("/api/post-reactions", routerPostReaction);
 app.use("/api/comments", routerComment);
 app.use("/api/posts", routerPost);
