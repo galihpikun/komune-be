@@ -9,7 +9,8 @@ import {
     approvePost,
     rejectPost,
     getTrendingPosts,
-    getUserPosts
+    getUserPosts,
+    getPostsMods
 } from "../controllers/postController.js";
 import { jwtMiddleware } from "../middlewares/jwtMiddleware.js";
 import { uploadPost } from "../middlewares/uploadPostMiddleware.js";
@@ -19,8 +20,17 @@ const routerPost = express.Router();
 routerPost.use(jwtMiddleware);
 
 routerPost.get("/", getPosts);
+routerPost.get("/moderation", getPostsMods);
 routerPost.get("/trending", getTrendingPosts);
 routerPost.get("/user-posts", getUserPosts);
+routerPost.patch(
+    "/approve/:id",
+    approvePost
+);
+routerPost.patch(
+    "/reject/:id",
+    rejectPost
+);
 routerPost.get("/:id", getPostById);
 routerPost.post(
     "/",
@@ -36,13 +46,6 @@ routerPost.delete(
     "/:id",
     deletePost
 );
-routerPost.patch(
-    "/approve/:id",
-    approvePost
-);
-routerPost.patch(
-    "/reject/:id",
-    rejectPost
-);
+
 
 export default routerPost;

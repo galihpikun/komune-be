@@ -11,6 +11,8 @@ import routerReport from "./src/routes/reportRoute.js"
 
 // delete!
 import { jwtMiddleware } from "./src/middlewares/jwtMiddleware.js"
+import routerReportWork from "./src/routes/postsReportRoute.js"
+import routeDash from "./src/routes/dashboardRoute.js"
 
 const app = express()
 const port = 3000
@@ -21,6 +23,8 @@ app.use(cors());
 // Route uploaded images
 app.use("/uploads", express.static("uploads"));
 
+app.use("/api", routeDash);
+app.use("/api/report-work", routerReportWork);
 app.use("/api/reports", routerReport);
 app.use("/api/notifications", routerNotification);
 app.use("/api/post-reactions", routerPostReaction);
