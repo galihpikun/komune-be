@@ -44,7 +44,7 @@ export const getPosts = async (req, res) => {
   ON users.id = posts.user_id
 
   WHERE posts.status = 'approved'
-
+  AND posts.is_locked = 0
 
   ORDER BY posts.created_at DESC
 `);
@@ -237,16 +237,6 @@ export const getUserPosts = async (req, res) => {
 };
 
 export const getTrendingPosts = async (req, res) => {
-  const user = req.user;
-
-    const isAdmin = user.role === "admin" || user.role === "super_admin";
-
-    if (!isAdmin) {
-      return res.status(403).json({
-        success: false,
-        message: "Tidak memiliki akses",
-      });
-    }
 
   try {
     const [posts] = await connection.query(`
@@ -278,7 +268,7 @@ export const getTrendingPosts = async (req, res) => {
       JOIN users
       ON users.id = posts.user_id
 
-      WHERE posts.status = 'approved'
+      WHERE posts.status = 'approved' AND posts.is_locked = 0
 
 
       ORDER BY total_likes DESC, posts.created_at DESC
